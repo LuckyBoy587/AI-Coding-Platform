@@ -1,31 +1,36 @@
-import {sendRequest} from "../utils/request-sender.js";
-import {useState} from "react";
+import {useEffect, useRef} from "react";
 import GeminiResponse from "./GeminiResponse.jsx";
+import UserQuery from "./UserQuery.jsx";
+import { useConversation } from "../contexts/ConversationContext.jsx";
 
-const Chat = ({question}) => {
-  const [reply, setReply] = useState("Waiting for reply...");
-  const handleClick = () => {
-    if (!question) {
-        setReply("Please type a question first.");
-        return;
+const Chat = () => {
+  const { conversationHistory } = useConversation();
+  const chatBodyRef = useRef(null);
+
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
     }
-    sendRequest(question)
-      .then((response) => {
-        setReply(response || "No reply received");
-      })
+  }, []);
+
+  const renderConversation = () => {
+    return conversationHistory.map((msg, index) => (
+      msg.sender === "assistant"
+        ? <GeminiResponse key={index} text={msg.message}/>
+        : <UserQuery key={index} text={msg.message}/>
+    ));
   }
   return (
-    <div className="flex flex-col h-full bg-[var(--color-bg-secondary)] rounded-l-xl p-6 shadow-lg transition-colors duration-300">
-      <p className="text-lg font-semibold mb-4 text-[var(--color-text-primary)]">Gemini Chat</p>
-      <button
-        className="bg-[var(--color-bg-primary)] text-[var(--color-text-secondary)] px-4 py-2 rounded-lg border border-[var(--color-text-secondary)] transition-colors duration-200 mb-4
-        focus:outline-none focus:ring-2 focus:ring-[var(--color-text-secondary)] hover:cursor-pointer"
-        onClick={handleClick}
-      >
-        Ask: {question || "Type your question"}
-      </button>
-      <div className="flex-1 overflow-auto bg-[var(--color-bg-primary)] rounded-lg p-4 transition-colors duration-300">
-        <GeminiResponse text={reply}/>
+    <div
+      className="flex flex-col h-full bg-[var(--color-bg-secondary)] rounded-xl p-0 shadow-2xl border border-[var(--color-border)]"
+      style={{boxShadow: "0 8px 32px 0 rgba(0,0,0,0.65)", minWidth: 320}}>
+      <div className="flex items-center justify-between px-6 py-4">
+        <p className="text-lg font-semibold text-[var(--color-text-primary)]">Chat with LUCKY BOT</p>
+      </div>
+      <div
+        ref={chatBodyRef}
+        className="flex flex-col flex-1 overflow-auto bg-[var(--color-bg-primary)] rounded-b-xl p-4 transition-colors duration-300">
+        {renderConversation()}
       </div>
     </div>
   )

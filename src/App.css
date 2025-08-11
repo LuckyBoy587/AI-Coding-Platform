@@ -1,13 +1,148 @@
 @import "tailwindcss";
 
 :root {
-    --color-bg-primary: #282a3a;
-    --color-bg-secondary: #5c5c73;
-    --color-text-primary: #e0e6ed;
-    --color-text-secondary: #a3aed6;
+    --color-bg-primary: #18181b;
+    --color-bg-secondary: #232326;
+    --color-text-primary: #f5f5f5;
+    --color-text-secondary: #b1b1b1;
+    --color-user-bg: #222226;
+    --color-user-border: #44444a;
+    --color-assistant-border: #b1b1b1;
+    --color-border: #232326;
+    /* Updated code color to better match theme */
+    --color-text-code: #f5f5f5;
+    --color-bg-code: #18181b;
+    --color-text-code-block: #f5f5f5;
+    --color-button-bg: #232326;
+    --color-button-text: #f5f5f5;
+    --color-button-bg-hover: #222226;
 }
 
 #root {
     background-color: var(--color-bg-primary);
     color: var(--color-text-primary);
+}
+
+/* Custom scrollbar styling for dark theme */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px; /* Make horizontal scrollbar as thin as vertical */
+    background: var(--color-bg-primary);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--color-bg-secondary);
+    border-radius: 8px;
+    border: 2px solid var(--color-bg-primary);
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-user-bg);
+}
+::-webkit-scrollbar-corner {
+    display: none; /* Hide the corner where horizontal and vertical scrollbars meet */
+}
+
+/* Custom Code Block Styles */
+.gemini-response {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+}
+
+.gemini-response p {
+    margin-bottom: 1rem;
+    color: var(--color-text-primary);
+}
+
+.gemini-response h3 {
+    color: var(--color-text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 1.5rem 0 1rem 0;
+    border-bottom: 2px solid var(--color-border, #e5e7eb);
+    padding-bottom: 0.5rem;
+}
+
+.gemini-response hr {
+    border: none;
+    border-top: 1px solid var(--color-border, #e5e7eb);
+    margin: 2rem 0;
+}
+
+.gemini-response ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+}
+
+.gemini-response li {
+    margin-bottom: 0.5rem;
+}
+
+.gemini-response strong {
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.gemini-response code {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-code);
+    /*padding: 0.2rem 0.4rem;*/
+    border-radius: 0.25rem;
+    font-family: 'Fira Code', 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+.gemini-response pre {
+    background-color: var(--color-bg-code);
+    color: var(--color-text-code-block);
+    /*padding: 1rem;*/
+    border-radius: 0.5rem;
+    overflow-x: auto;
+}
+
+.gemini-response pre code {
+    background: none;
+    color: inherit;
+    padding: 0;
+    font-size: 0.875rem;
+}
+
+@keyframes popup-slide-in {
+    0% {
+        opacity: 0;
+        transform: translate(60px, 60px) scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-10px, -10px) scale(1.03);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+@keyframes popup-slide-out {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+    80% {
+        opacity: 0.9;
+        transform: translate(-10px, -10px) scale(0.95);
+    }
+    85% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(60px, 60px) scale(0.8);
+    }
+}
+
+.animate-pop-in {
+    animation: popup-slide-in 0.5s cubic-bezier(0.4, 0.8, 0.2, 1) both;
+}
+
+.animate-pop-out {
+    animation: popup-slide-out 0.4s cubic-bezier(0.4, 0.8, 0.2, 1) both;
 }
