@@ -41,8 +41,9 @@ app.post("/run", (req, res) => {
     const absPath = process.cwd();
     const encodedCode = Buffer.from(code).toString("base64");
 
-    command = `docker run --rm -v "${absPath}:/app" -w /app openjdk sh -c "echo ${encodedCode} | base64 -d > ${className}.java && javac ${className}.java && java ${className}"`;
-  } else {
+    command = `docker run --rm -v "${absPath}:/app" -w /app openjdk sh -c "echo ${encodedCode} | base64 -d > ${className}.java && javac ${className}.java && java ${className} && rm -f ${className}.java ${className}.class"`;
+  }
+  else {
     return res.status(400).send("Unsupported language");
   }
 
