@@ -30,19 +30,32 @@ app.post("/run", (req, res) => {
   let command;
 
   if (language === "python") {
-    command = `docker run --rm python python -c "${code.replace(/"/g, '\\"')}"`;
+    const absPath = process.cwd();
+    const encodedCode = Buffer.from(code).toString("base64");
+    command = `docker run --rm -v "${absPath}:/app" -w /app python sh -c "echo ${encodedCode} | base64 -d > script.py && python script.py && rm -f script.py"`;
   }
+
   else if (language === "java") {
-    const classNameMatch = code.match(/class\s+([A-Za-z_]\w*)/);
-    if (!classNameMatch) {
-      return res.status(400).send("Java code must contain a class.");
+    let className;
+
+    const publicClassMatch = code.match(/public\s+class\s+([A-Za-z_]\w*)/);
+    if (publicClassMatch) {
+      className = publicClassMatch[1];
+    } else {
+      const anyClassMatch = code.match(/class\s+([A-Za-z_]\w*)/);
+      if (anyClassMatch) {
+        className = anyClassMatch[1];
+      } else {
+        return res.status(400).send("Java code must contain a class.");
+      }
     }
-    const className = classNameMatch[1];
+
     const absPath = process.cwd();
     const encodedCode = Buffer.from(code).toString("base64");
 
     command = `docker run --rm -v "${absPath}:/app" -w /app openjdk sh -c "echo ${encodedCode} | base64 -d > ${className}.java && javac ${className}.java && java ${className} && rm -f ${className}.java ${className}.class"`;
   }
+
   else {
     return res.status(400).send("Unsupported language");
   }
