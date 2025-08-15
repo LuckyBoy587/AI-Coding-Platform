@@ -22,7 +22,7 @@ const GeminiIcon = ({onIconClick, iconRef}) => {
       }}
       ref={iconRef}
       className={"flex justify-center items-center p-2 animate-rotate-clockwise"}>
-      <img src={"/gemini.png"} alt={"ASK AI"} className="w-6 h-6"/>
+      <img src={"/gemini.png"} alt={"ASK AI"} className="w-6 h-6 transition-all duration-200 group-hover:scale-110"/>
     </button>
   )
 }

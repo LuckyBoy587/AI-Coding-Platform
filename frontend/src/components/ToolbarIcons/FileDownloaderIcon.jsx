@@ -23,7 +23,7 @@ const FileDownloaderIcon = () => {
     <div
       onClick={handleDownload}
       className={"flex justify-center items-center p-2"}>
-      <i className="fa-solid fa-download text-2xl"/>
+      <i className="fa-solid fa-download text-2xl transition-all duration-200 group-hover:text-[var(--color-accent)] group-hover:scale-110"/>
     </div>
   )
 }

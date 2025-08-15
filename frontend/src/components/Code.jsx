@@ -21,7 +21,9 @@ const Code = () => {
   const monacoLangId = currentLang ? currentLang.monacoId : "plaintext";
 
   return (
-    <div className="max-w-full bg-[var(--color-bg-secondary)] rounded-xl p-6 shadow-lg h-full transition-colors duration-300 min-w-0">
+    <div
+      style={{height: "calc(100vh - 24px)"}}
+      className="max-w-full bg-[var(--color-bg-secondary)] rounded-xl p-6 shadow-lg transition-colors duration-300 min-w-0 h-full">
       <div className="flex flex-col h-full w-full min-w-0">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-[var(--color-text-primary)]">Code Editor</h2>
@@ -33,7 +35,7 @@ const Code = () => {
               id="language-select"
               value={selectedLanguage}
               onChange={handleLanguageChange}
-              className="bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-text-secondary)] rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-text-secondary)] transition-all duration-200 shadow-md hover:border-[var(--color-user-border)] focus:border-[var(--color-user-border)] appearance-none relative cursor-pointer"
+              className="bg-[var(--color-bg-primary)] text-[var(--color-text-primary)] border border-[var(--color-user-border)] rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] transition-all duration-200 shadow-md hover:border-[var(--color-accent)] focus:border-[var(--color-accent)] appearance-none relative cursor-pointer"
             >
               {LANGUAGES.map((lang, index) => (
                 <option
@@ -47,7 +49,9 @@ const Code = () => {
             </select>
           </div>
         </div>
-        <div className="flex-1 min-h-0 w-full">
+        <div
+          style={{zIndex: 0}}
+          className="flex-1 min-h-0 w-full">
           <Editor
             language={monacoLangId}
             theme="vs-dark"

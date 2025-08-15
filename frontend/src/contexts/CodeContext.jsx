@@ -6,6 +6,7 @@ const CodeContext = createContext(undefined);
 export const CodeProvider = ({children}) => {
   const [code, setCode] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState(DEFAULT_LANGUAGE);
+  const [userInput, setUserInput] = useState("");
 
   const updateCode = (newCode) => {
     setCode(newCode);
@@ -24,7 +25,9 @@ export const CodeProvider = ({children}) => {
     selectedLanguage,
     updateCode,
     updateLanguage,
-    clearCode
+    clearCode,
+    userInput,
+    setUserInput,
   };
 
   return (

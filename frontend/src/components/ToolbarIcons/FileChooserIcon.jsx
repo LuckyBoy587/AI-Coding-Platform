@@ -31,7 +31,7 @@ const FileChooserIcon = () => {
 
   return (
     <div className={"flex justify-center items-center p-2"} onClick={handleIconClick}>
-      <i className="fas fa-file-upload text-2xl"/>
+      <i className="fas fa-file-upload text-2xl transition-all duration-200 group-hover:text-[var(--color-accent)] group-hover:scale-110"/>
       <input type="file" ref={fileInputRef} onChange={handleFileChange} className={"hidden"}/>
     </div>
   )

@@ -1,9 +1,11 @@
-import {useRef, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import Question from "./Question.jsx";
 import Chat from "./Chat.jsx";
 import Code from "./Code.jsx";
 import useOutsideClick from "../utils/OutsideClick.jsx";
 import ToolBar from "./ToolBar.jsx";
+import {useOutput} from "../contexts/OutputContext.jsx";
+import Output from "./Output.jsx";
 
 const CHAT_ANIMATION_DURATION = 400; // ms, matches .animate-pop-out
 
@@ -14,6 +16,7 @@ const Home = () => {
 
   const chatRef = useRef(null);
   const toggleButtonRef = useRef(null);
+  const {showOutput} = useOutput();
 
   useOutsideClick(chatRef, toggleButtonRef, () => {
     if (chatOpen) handleToggleChat();
@@ -40,12 +43,13 @@ const Home = () => {
   };
 
   return (
-    <div className={"flex gap-4 h-full relative min-w-0 overflow-hidden"}>
-      <div className="flex-1 min-w-fit">
+    <div className={"flex gap-4 h-full relative min-w-0"}>
+      <div className="flex-1 min-w-fit sticky top-0 py-3 max-h-screen">
         <Question onRequestSent={onRequestSent}/>
       </div>
-      <div className="flex-3 min-w-0">
+      <div className="flex-3 min-w-0 py-3 flex flex-col gap-4 overflow-y-auto">
         <Code/>
+        {showOutput && <Output />}
       </div>
 
       {chatVisible && (

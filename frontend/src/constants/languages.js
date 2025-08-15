@@ -5,7 +5,7 @@ export const LANGUAGES = [
   {name: "JavaScript", monacoId: "javascript", version: "ES6", fileExtension: "js"},
 ];
 
-export const hasLanguageByName = (name) => LANGUAGES.some(language => language.name === name);
+export const hasLanguageByName = (name) => LANGUAGES.some(language => language.name.toLowerCase() === name.toLowerCase());
 
 export const hasLanguageByExtension = (extension) => LANGUAGES.some(language => language.fileExtension === extension);
 

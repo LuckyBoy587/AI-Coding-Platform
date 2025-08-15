@@ -1,14 +1,16 @@
 import {useCode} from "../../contexts/CodeContext.jsx";
+import {useOutput} from "../../contexts/OutputContext.jsx";
 
 const CodeRunnerIcon = () => {
-    const {code, selectedLanguage} = useCode();
+    const {code, selectedLanguage, userInput} = useCode();
+    const {setShowOutput, setOutput, setIsSuccessful} = useOutput();
   const handleIconClick = async () => {
     if (code.trim() === "") {
       alert("No code to run.");
       return;
     }
-
-    const url = "http://localhost:5000/run";
+    setShowOutput(false);
+    const url = "https://docker-test-3-9cf4cc04b890.herokuapp.com/run";
     await fetch(url, {
       method: "POST",
       headers: {
@@ -17,15 +19,23 @@ const CodeRunnerIcon = () => {
       body: JSON.stringify({
         code: code,
         language: selectedLanguage.toLowerCase(),
+        input: userInput,
       }),
-    }).then((response) => response.text())
-      .then((response) => {console.log(response)})
+    }).then((response) => {
+      console.log(response);
+      setIsSuccessful(response.ok);
+      return response.text();
+    })
+      .then((response) => {
+        setOutput(response);
+        setShowOutput(true);
+      })
   }
   return (
     <div
       onClick={handleIconClick}
-      className={"flex justify-center items-center p-2"}>
-      <i className="fa-solid fa-circle-play text-2xl"></i>
+      className={"group flex justify-center items-center p-2 hover:cursor-pointer transition-transform duration-200"}>
+      <i className="fa-solid fa-circle-play text-2xl text-[var(--color-text-secondary)] transition-all duration-200 group-hover:text-[var(--color-accent)] group-hover:scale-110"></i>
     </div>
   )
 }
