@@ -3,7 +3,7 @@ import FileChooserIcon from "./ToolbarIcons/FileChooserIcon.jsx";
 import FileDownloaderIcon from "./ToolbarIcons/FileDownloaderIcon.jsx";
 import CodeRunnerIcon from "./ToolbarIcons/CodeRunnerIcon.jsx";
 
-const ToolBar = ({onGeminiClick, geminiRef}) => {
+const ToolBarRight = ({onGeminiClick, geminiRef}) => {
   const showIcon = (icon, tooltip) => {
     return (<div className={"relative flex flex-col group hover:cursor-pointer overflow-visible"}>
         {icon}
@@ -29,4 +29,4 @@ const ToolBar = ({onGeminiClick, geminiRef}) => {
   </div>)
 }
 
-export default ToolBar;
+export default ToolBarRight;

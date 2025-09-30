@@ -1,9 +1,9 @@
-import { Editor } from "@monaco-editor/react";
-import { LANGUAGES } from "../constants/languages.js";
-import { useCode } from "../contexts/CodeContext.jsx";
+import {Editor} from "@monaco-editor/react";
+import {findPlaceholderByLanguage, LANGUAGES} from "../constants/languages.js";
+import {useCode} from "../contexts/CodeContext.jsx";
 
 const Code = () => {
-  const { code, selectedLanguage, updateCode, updateLanguage } = useCode();
+  const {code, selectedLanguage, updateCode, updateLanguage} = useCode();
 
   const handleEditorDidMount = (editor) => {
     editor.onDidChangeModelContent(() => {
@@ -14,7 +14,13 @@ const Code = () => {
 
   const handleLanguageChange = (e) => {
     updateLanguage(e.target.value);
+    updateCode(findPlaceholderByLanguage(e.target.value.toLowerCase()));
+    console.log(findPlaceholderByLanguage(e.target.value.toLowerCase()))
   };
+
+  const toTitleCase = (str) => {
+    return str[0].toUpperCase() + str.slice(1);
+  }
 
   // Always resolve monacoId from the selected language
   const currentLang = LANGUAGES.find(lang => lang.name === selectedLanguage);
@@ -43,7 +49,7 @@ const Code = () => {
                   value={lang.name}
                   className="bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)]"
                 >
-                  {lang.name} {lang.version && `(${lang.version})`}
+                  {toTitleCase(lang.name)} {lang.version && `(${lang.version})`}
                 </option>
               ))}
             </select>

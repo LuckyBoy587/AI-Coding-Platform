@@ -15,16 +15,16 @@
     --color-text-code-block: #e6eaff;
     --color-button-bg: #171923;
     --color-button-text: #f5f7fb;
-    --color-button-bg-hover: #151824;
+    --color-button-bg-hover: #f5f7fb;
+    --color-button-text-hover: #151824;
 
     /* New accent system for modern feel */
-    --color-accent: #8b5cf6;        /* violet-500 */
+    --color-accent: #8b5cf6; /* violet-500 */
     --color-accent-strong: #7c3aed; /* violet-600 */
     --color-accent-contrast: #ffffff;
 
     /* Subtle app background gradient */
-    --color-bg-gradient: radial-gradient(1200px 600px at 80% 10%, rgba(139,92,246,0.10), transparent 60%),
-                         radial-gradient(1000px 500px at 10% 90%, rgba(59,130,246,0.10), transparent 60%);
+    --color-bg-gradient: rgba(139, 92, 246, 0.10);
 }
 
 #root {
@@ -41,14 +41,18 @@
     height: 8px; /* Make horizontal scrollbar as thin as vertical */
     background: var(--color-bg-primary);
 }
+
 ::-webkit-scrollbar-thumb {
     background: var(--color-bg-secondary);
     border-radius: 8px;
     border: 2px solid var(--color-bg-primary);
 }
+
 ::-webkit-scrollbar-thumb:hover {
     background: var(--color-accent);
+    transition: all 0.3s ease;
 }
+
 ::-webkit-scrollbar-corner {
     display: none; /* Hide the corner where horizontal and vertical scrollbars meet */
 }
@@ -197,15 +201,19 @@
 
 @keyframes fade-in-left-to-right {
     0% {
-        width: 0;
         opacity: 0;
+        transform: scaleX(0);
+        transform-origin: left;
     }
     100% {
-        width: 100%;
-        opacity: 100;
+        opacity: 1;
+        transform: scaleX(1);
+        transform-origin: left;
     }
 }
 
-.animate-fade-in-left-to-right {
-    animation: fade-in-left-to-right 0.5s ease-in-out;
+@layer utilities {
+    .animate-fade-in-left-to-right {
+        animation: fade-in-left-to-right 0.5s ease-in-out;
+    }
 }

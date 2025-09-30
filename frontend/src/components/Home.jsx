@@ -1,13 +1,14 @@
-import {useEffect, useRef, useState} from "react";
+import {useRef, useState} from "react";
 import Question from "./Question.jsx";
 import Chat from "./Chat.jsx";
 import Code from "./Code.jsx";
 import useOutsideClick from "../utils/OutsideClick.jsx";
-import ToolBar from "./ToolBar.jsx";
+import ToolBarRight from "./ToolBarRight.jsx";
 import {useOutput} from "../contexts/OutputContext.jsx";
 import Output from "./Output.jsx";
+import ToolBarLeft from "./ToolBarLeft.jsx";
 
-const CHAT_ANIMATION_DURATION = 400; // ms, matches .animate-pop-out
+const CHAT_ANIMATION_DURATION = 400;
 
 const Home = () => {
   const [chatOpen, setChatOpen] = useState(false);
@@ -44,12 +45,15 @@ const Home = () => {
 
   return (
     <div className={"flex gap-4 h-full relative min-w-0"}>
+      <div className={"z-50"}>
+        <ToolBarLeft/>
+      </div>
       <div className="flex-1 min-w-fit sticky top-0 py-3 max-h-screen">
         <Question onRequestSent={onRequestSent}/>
       </div>
       <div className="flex-3 min-w-0 py-3 flex flex-col gap-4 overflow-y-auto">
         <Code/>
-        {showOutput && <Output />}
+        {showOutput && <Output/>}
       </div>
 
       {chatVisible && (
@@ -60,7 +64,7 @@ const Home = () => {
         </div>
       )}
 
-      <ToolBar
+      <ToolBarRight
         onGeminiClick={handleToggleChat}
         geminiRef={toggleButtonRef}
       />

@@ -1,19 +1,20 @@
 import React, {createContext, useContext, useState} from 'react';
-import {DEFAULT_LANGUAGE} from '../constants/languages.js';
+import {DEFAULT_LANGUAGE, findPlaceholderByLanguage} from '../constants/languages.js';
 
 const CodeContext = createContext(undefined);
 
 export const CodeProvider = ({children}) => {
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(findPlaceholderByLanguage(DEFAULT_LANGUAGE));
   const [selectedLanguage, setSelectedLanguage] = useState(DEFAULT_LANGUAGE);
   const [userInput, setUserInput] = useState("");
+  const [question, setQuestion] = useState("");
 
   const updateCode = (newCode) => {
     setCode(newCode);
   };
 
   const updateLanguage = (newLanguage) => {
-    setSelectedLanguage(newLanguage);
+    setSelectedLanguage(newLanguage.toLowerCase());
   };
 
   const clearCode = () => {
@@ -28,6 +29,8 @@ export const CodeProvider = ({children}) => {
     clearCode,
     userInput,
     setUserInput,
+    question,
+    setQuestion,
   };
 
   return (
