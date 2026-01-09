@@ -8,5 +8,5 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
-  base: '/ai-coding-platform/',
+  base: '/AI-Coding-Platform/',
 })
