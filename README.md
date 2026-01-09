@@ -1,225 +1,554 @@
-AI Coding Platform
+<div align="center">
 
-A full-stack, web-based coding assistant and code runner. Write code in the browser, run it safely in Docker on the backend, and get AI help powered by Google Generative AI (Gemini). Includes code upload/download, multi-language Monaco editor, streaming AI responses with syntax-highlighted code blocks, and a rich output panel.
+# 🤖 AI Coding Platform
 
-Table of Contents
-- Overview
-- Features
-  - Frontend (React + Vite)
-  - Backend (Node.js + Express + Docker)
-- Tech Stack
-- Project Structure
-- Getting Started
-  - Prerequisites
-  - Installation
-  - Environment Variables
-  - Running Locally (Frontend + Backend)
-  - Building for Production
-- API Reference (Backend)
-- Configuration Notes
-- Troubleshooting
-- License
+### *An intelligent, full-stack web IDE with AI-powered assistance*
 
-Overview
-This project provides an AI-assisted coding experience:
-- A Monaco-based code editor with language selection for Python, C++, Java, and JavaScript.
-- A toolbar to upload code from disk, download the current editor content, run code via a backend Docker runner, and open an AI chat (Gemini).
-- A chat assistant that streams answers, renders Markdown/KaTeX, highlights code with copy/move-to-editor actions, and maintains conversation context.
-- An output panel that shows stdout/stderr summaries after running code, with success/failure status.
+[![React](https://img.shields.io/badge/React-19.1.0-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-7.0.4-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-5.1.0-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![Docker](https://img.shields.io/badge/Docker-Required-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-ISC-blue.svg)](LICENSE)
 
-Features
-Frontend (React + Vite)
-- Monaco Code Editor (src/components/Code.jsx)
-  - Supports Python, C++, Java, JavaScript via language dropdown.
-  - Language definitions in src/constants/languages.js with monacoId and versions.
-  - Controlled content updates via CodeContext to keep app state in sync.
-  - Editor options: word wrap, smooth scrolling, themed vs-dark.
-- Language Management (src/constants/languages.js)
-  - LANGUAGES: [{ name, monacoId, version, fileExtension }].
-  - DEFAULT_LANGUAGE = "Java".
-  - Helpers: hasLanguageByName, hasLanguageByExtension, findLanguageByExtension, findExtensionByLanguage.
-- State Management with Contexts
-  - CodeContext (src/contexts/CodeContext.jsx): code, selectedLanguage, updateCode, updateLanguage, clearCode, userInput, setUserInput.
-  - OutputContext (src/contexts/OutputContext.jsx): output, isSuccessful, showOutput, setOutput, setIsSuccessful, setShowOutput.
-  - ConversationContext (src/contexts/ConversationContext.jsx): conversationHistory, addMessage, appendToLastMessage (supports streaming), clearConversation.
-- Toolbar and Utilities (src/components/ToolBar.jsx + ToolbarIcons)
-  - FileChooserIcon (src/components/ToolbarIcons/FileChooserIcon.jsx):
-    - Upload a local file; detects language by extension and sets editor language and content.
-  - FileDownloaderIcon (src/components/ToolbarIcons/FileDownloaderIcon.jsx):
-    - Download current editor content as code.<extension> matching the selected language.
-  - CodeRunnerIcon (src/components/ToolbarIcons/CodeRunnerIcon.jsx):
-    - Run code by POSTing { code, language, input } to a /run endpoint. Updates OutputContext with result.
-  - GeminiIcon (src/components/ToolbarIcons/GeminiIcon.jsx):
-    - Toggles the AI chat panel with small button animations.
-  - Tooltips and hover/active animation classes integrated via Tailwind/utility classes.
-- AI Assistant (Gemini) Integration
-  - Question input (src/components/Question.jsx):
-    - Problem Statement (textarea), Custom Input (textarea tied to userInput used as stdin), and Ask Anything (prompt input).
-    - Builds a context-aware prompt including the problem statement, user freeform query, user code, and prior conversation.
-    - Streams Gemini responses using @google/generative-ai. Requires VITE_GEMINI_API_KEY.
-    - Emits messages to ConversationContext: user question and a temporary "Thinking..." placeholder, then streams tokens into the assistant message using appendToLastMessage.
-  - Chat UI (src/components/Chat.jsx):
-    - Renders conversationHistory using two message components:
-      - GeminiResponse (src/components/GeminiResponse.jsx): Markdown-It + KaTeX + Highlight.js rendering.
-        - Code blocks add actions: copy to clipboard, and move code to editor (also auto-sets detected language if supported).
-      - UserQuery (src/components/UserQuery.jsx): Renders user messages via react-markdown with GFM.
-    - Auto-scrolls to latest message on open.
-  - Outside click handling (src/utils/OutsideClick.jsx) closes the chat panel when clicking outside of it (ignoring the toggle button).
-- Output Panel (src/components/Output.jsx)
-  - Displays "Compilation Successful" or "Compilation Failed" based on OutputContext.isSuccessful.
-  - Shows the raw output (stdout or error text) and auto-scrolls into view when opened.
-  - Close button to hide the output panel.
-- App Wiring (src/App.jsx + src/components/Home.jsx)
-  - App.jsx composes providers: CodeProvider, ConversationProvider, OutputProvider.
-  - Home.jsx lays out Question, Code, conditional Output, floating Chat panel with animations, and the ToolBar.
-- Styling
-  - Tailwind CSS v4, with custom CSS variables for colors.
-  - Highlight.js theme for rendered AI code blocks.
+**Write code. Run it. Get AI help. All in your browser.**
 
-Backend (Node.js + Express + Docker)
-- Endpoint: POST /run (defined in backend/server.js)
-  - Request JSON body: { code: string, language: string, input?: string }.
-    - language accepts: "javascript", "python", "java", "c++" (case-sensitive on backend; frontend lowercases before sending).
-    - input is optional and is piped to the executed program's stdin.
-  - Execution via Docker:
-    - JavaScript: node:18; writes script.js then node script.js.
-    - Python: python (default tag); writes script.py then python script.py.
-    - Java: openjdk; extracts class name from code (public class or first class), javac then java <ClassName>.
-    - C++: gcc; writes main.cpp, compiles to main, executes ./main.
-  - Mounts the backend process working directory into the container at /app using -v <absPath>:/app.
-  - Returns:
-    - 200 OK: plain text stdout.
-    - 400 Bad Request: plain text stderr or a generic error message.
-  - CORS enabled; JSON body parsing via body-parser.
-  - Server listens on process.env.PORT or 8080.
+[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [API Reference](#-api-reference)
 
-Tech Stack
-- Frontend: React 19, Vite 7, @monaco-editor/react, Tailwind CSS 4, react-markdown + remark-gfm, markdown-it + markdown-it-katex, highlight.js.
-- Backend: Node.js, Express 5, body-parser, cors.
-- AI: @google/generative-ai (Gemini 2.5 Pro model via generateContentStream).
-- Runtime: Docker required on backend host (Docker Desktop on Windows/macOS or Docker Engine on Linux).
+</div>
 
-Project Structure
-ai-coding-platform
-- backend
-  - server.js
-  - package.json
-- frontend
-  - package.json
-  - public
-    - gemini.png (used by the Gemini toolbar icon)
-  - src
-    - App.jsx
-    - components
-      - Home.jsx
-      - ToolBar.jsx
-      - Code.jsx
-      - Output.jsx
-      - Question.jsx
-      - Chat.jsx
-      - GeminiResponse.jsx
-      - UserQuery.jsx
-      - ToolbarIcons
-        - FileChooserIcon.jsx
-        - FileDownloaderIcon.jsx
-        - CodeRunnerIcon.jsx
-        - GeminiIcon.jsx
-    - constants
-      - languages.js
-    - contexts
-      - CodeContext.jsx
-      - OutputContext.jsx
-      - ConversationContext.jsx
-    - utils
-      - OutsideClick.jsx
+---
 
-Getting Started
-Prerequisites
-- Node.js LTS (v18+ recommended)
-- npm (bundled with Node)
-- Docker installed and running (Docker Desktop on Windows/macOS)
+## 📖 Overview
 
-Installation
-1) Clone the repository
-   git clone <your-repo-url>
-   cd ai-coding-platform
+**AI Coding Platform** is a modern, browser-based integrated development environment (IDE) that combines the power of Monaco Editor with Google's Gemini AI. Write, execute, and debug code in multiple programming languages with real-time AI assistance—all without leaving your browser.
 
-2) Install dependencies
+### What Makes It Special?
+
+- 🎯 **Multi-Language Support**: Code in Python, C++, Java, and JavaScript
+- 🚀 **Instant Execution**: Run code securely in isolated Docker containers
+- 🤖 **AI-Powered Assistant**: Get intelligent coding help from Google Gemini AI
+- 💻 **Professional Editor**: Monaco Editor (the editor that powers VS Code)
+- 📊 **Rich Output**: See execution results with formatted stdout/stderr
+- 🎨 **Modern UI**: Beautiful, responsive design with Tailwind CSS
+
+---
+
+## ✨ Features
+
+### 🖥️ **Advanced Code Editor**
+- **Monaco Editor Integration**: Industry-standard code editing with IntelliSense
+- **Multi-Language Support**: Python, C++, Java, JavaScript with syntax highlighting
+- **File Operations**: Upload local files or download your work
+- **Smart Language Detection**: Automatic language detection from file extensions
+- **Customizable**: Word wrap, smooth scrolling, and dark theme support
+
+### 🤖 **AI Assistant (Powered by Gemini)**
+- **Conversational Interface**: Natural language interaction for coding help
+- **Context-Aware**: AI understands your code and conversation history
+- **Streaming Responses**: Real-time token streaming for fast feedback
+- **Rich Formatting**: Markdown, KaTeX math rendering, and syntax-highlighted code blocks
+- **Interactive Code Blocks**: Copy code snippets or insert directly into editor
+- **Custom Input Support**: Provide custom stdin for testing your programs
+
+### 🐳 **Secure Code Execution**
+- **Docker-Isolated**: Each execution runs in a secure, isolated container
+- **Multiple Runtimes**: 
+  - **Python**: Python 3 with full standard library
+  - **C++**: GCC compiler with C++17 support
+  - **Java**: OpenJDK with automatic class detection
+  - **JavaScript**: Node.js 18 runtime
+- **Real-Time Output**: See stdout/stderr with success/failure status
+- **Custom Input**: Provide stdin input for interactive programs
+
+### 🎨 **Modern User Interface**
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **Intuitive Layout**: Clean, distraction-free coding environment
+- **Floating Chat**: AI assistant panel that doesn't interrupt your workflow
+- **Smart Panels**: Auto-scrolling output and conversation displays
+- **Visual Feedback**: Status indicators, tooltips, and smooth animations
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| React | 19.1.0 | UI framework |
+| Vite | 7.0.4 | Build tool & dev server |
+| Monaco Editor | 4.7.0 | Code editor component |
+| Tailwind CSS | 4.1.11 | Styling framework |
+| Markdown-it | 14.1.0 | Markdown rendering |
+| Highlight.js | 11.11.1 | Syntax highlighting |
+| Google Generative AI | 0.24.1 | Gemini AI integration |
+
+### Backend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Node.js | 18+ | Runtime environment |
+| Express | 5.1.0 | Web framework |
+| Docker | Latest | Code execution isolation |
+| CORS | 2.8.5 | Cross-origin support |
+
+---
+
+## 📁 Project Structure
+
+```
+AI-Coding-Platform/
+├── frontend/
+│   ├── public/
+│   │   └── gemini.png              # AI assistant icon
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Home.jsx            # Main layout component
+│   │   │   ├── Code.jsx            # Monaco editor wrapper
+│   │   │   ├── ToolBar.jsx         # Action toolbar
+│   │   │   ├── Question.jsx        # AI input interface
+│   │   │   ├── Chat.jsx            # Conversation display
+│   │   │   ├── Output.jsx          # Code execution results
+│   │   │   ├── GeminiResponse.jsx  # AI message renderer
+│   │   │   ├── UserQuery.jsx       # User message renderer
+│   │   │   └── ToolbarIcons/
+│   │   │       ├── FileChooserIcon.jsx    # File upload
+│   │   │       ├── FileDownloaderIcon.jsx # File download
+│   │   │       ├── CodeRunnerIcon.jsx     # Code execution
+│   │   │       └── GeminiIcon.jsx         # AI toggle
+│   │   ├── contexts/
+│   │   │   ├── CodeContext.jsx           # Code state management
+│   │   │   ├── OutputContext.jsx         # Output state management
+│   │   │   └── ConversationContext.jsx   # Chat state management
+│   │   ├── constants/
+│   │   │   └── languages.js              # Language definitions
+│   │   ├── utils/
+│   │   │   └── OutsideClick.jsx          # Click-away handler
+│   │   ├── App.jsx                       # Root component
+│   │   └── main.jsx                      # Entry point
+│   ├── package.json
+│   └── vite.config.js
+├── backend/
+│   ├── server.js                   # Express server & Docker runner
+│   └── package.json
+└── README.md
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+- **Node.js** (v18 or higher) - [Download](https://nodejs.org/)
+- **npm** (comes with Node.js)
+- **Docker** - [Download](https://www.docker.com/get-started)
+  - Docker Desktop (Windows/macOS) or Docker Engine (Linux)
+  - Ensure Docker is running before starting the backend
+- **Google Gemini API Key** - [Get one here](https://makersuite.google.com/app/apikey)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/LuckyBoy587/AI-Coding-Platform.git
+   cd AI-Coding-Platform
+   ```
+
+2. **Install backend dependencies**
+   ```bash
    cd backend
    npm install
-   cd ..\frontend
+   ```
+
+3. **Install frontend dependencies**
+   ```bash
+   cd ../frontend
    npm install
+   ```
 
-Environment Variables
-- Frontend (Vite):
-  - VITE_GEMINI_API_KEY: Your Google Generative AI API key.
-    - Create frontend/.env and add:
-      VITE_GEMINI_API_KEY=your_api_key_here
+4. **Set up environment variables**
+   
+   Create a `.env` file in the `frontend/` directory:
+   ```bash
+   # frontend/.env
+   VITE_GEMINI_API_KEY=your_gemini_api_key_here
+   ```
 
-Running Locally (Frontend + Backend)
-- Backend
-  cd backend
-  npm start
-  # Runs on http://localhost:8080 by default
+### Running Locally
 
-- Frontend
-  cd ..\frontend
-  npm run dev
-  # Opens the app on http://localhost:5173 by default
+#### Start the Backend Server
+```bash
+cd backend
+npm start
+```
+The server will start on `http://localhost:8080`
 
-Connecting Frontend to Local Backend
-- By default, the run button in the frontend posts to a hosted endpoint:
-  src/components/ToolbarIcons/CodeRunnerIcon.jsx
-  const url = "https://docker-test-3-9cf4cc04b890.herokuapp.com/run";
+#### Start the Frontend Development Server
+```bash
+cd frontend
+npm run dev
+```
+The app will open at `http://localhost:5173`
 
-- For local development, change it to your local server:
-  const url = "http://localhost:8080/run";
+#### Configure Local Backend (Optional)
 
-Building for Production
-- Frontend
-  cd frontend
-  npm run build
-  # Output in frontend/dist
-  # Serve dist/ with any static file server (e.g., Vite preview: npm run preview)
+By default, the frontend uses a hosted backend. To use your local backend:
 
-- Backend
-  Deployed as a Node process. Ensure Docker is available on the host if you want to execute code there.
-  PORT can be set via environment variable.
+1. Open `frontend/src/components/ToolbarIcons/CodeRunnerIcon.jsx`
+2. Change the URL:
+   ```javascript
+   // Change from:
+   const url = "https://docker-test-3-9cf4cc04b890.herokuapp.com/run";
+   
+   // To:
+   const url = "http://localhost:8080/run";
+   ```
 
-API Reference (Backend)
-POST /run
-- Description: Execute the provided code inside a Docker container for the selected language.
-- Body (application/json):
+---
+
+## 📚 Documentation
+
+### Environment Variables
+
+#### Frontend Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `VITE_GEMINI_API_KEY` | Yes | Your Google Generative AI API key for Gemini integration |
+
+Create a `.env` file in the `frontend/` directory with your API key:
+```env
+VITE_GEMINI_API_KEY=your_actual_api_key_here
+```
+
+#### Backend Environment Variables
+
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `PORT` | No | 8080 | Port number for the Express server |
+
+### Supported Languages
+
+| Language | File Extension | Runtime | Compiler/Interpreter |
+|----------|----------------|---------|---------------------|
+| Python | `.py` | Python 3 | `python script.py` |
+| C++ | `.cpp` | GCC | `g++ main.cpp -o main && ./main` |
+| Java | `.java` | OpenJDK | `javac ClassName.java && java ClassName` |
+| JavaScript | `.js` | Node.js 18 | `node script.js` |
+
+### State Management
+
+The application uses React Context for global state management:
+
+#### CodeContext
+Manages editor content and language selection:
+- `code` - Current editor content
+- `selectedLanguage` - Active programming language
+- `userInput` - Custom stdin for code execution
+- `updateCode()` - Update editor content
+- `updateLanguage()` - Change language
+- `clearCode()` - Clear editor
+
+#### OutputContext
+Manages code execution results:
+- `output` - Execution output (stdout/stderr)
+- `isSuccessful` - Execution status
+- `showOutput` - Output panel visibility
+
+#### ConversationContext
+Manages AI chat history:
+- `conversationHistory` - Array of messages
+- `addMessage()` - Add new message
+- `appendToLastMessage()` - Stream tokens to last message
+- `clearConversation()` - Reset chat
+
+---
+
+## 🔌 API Reference
+
+### POST `/run`
+
+Execute code in a Docker container.
+
+**Endpoint:** `POST http://localhost:8080/run`
+
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "code": "print('Hello, World!')",
+  "language": "python",
+  "input": "optional stdin input"
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `code` | string | Yes | Source code to execute |
+| `language` | string | Yes | One of: `javascript`, `python`, `java`, `c++` |
+| `input` | string | No | Input to provide to the program via stdin |
+
+**Response:**
+
+**Success (200 OK):**
+```
+Content-Type: text/plain
+
+Hello, World!
+```
+
+**Error (400 Bad Request):**
+```
+Content-Type: text/plain
+
+Error: [compilation or runtime error message]
+```
+
+**Example Usage:**
+
+```javascript
+// Using fetch
+const response = await fetch('http://localhost:8080/run', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    code: 'console.log("Hello from Node.js!");',
+    language: 'javascript',
+    input: ''
+  })
+});
+
+const output = await response.text();
+console.log(output); // "Hello from Node.js!"
+```
+
+```bash
+# Using curl
+curl -X POST http://localhost:8080/run \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "print(\"Hello from Python!\")",
+    "language": "python"
+  }'
+```
+
+---
+
+## 🏗️ Building for Production
+
+### Frontend
+
+```bash
+cd frontend
+npm run build
+```
+
+This creates an optimized production build in `frontend/dist/`.
+
+**Preview the production build:**
+```bash
+npm run preview
+```
+
+**Deploy:**
+- Upload the `dist/` folder to any static hosting service (Netlify, Vercel, GitHub Pages, etc.)
+- Or use the included GitHub Pages deployment script:
+  ```bash
+  npm run deploy
+  ```
+
+### Backend
+
+The backend is deployed as a Node.js process. Ensure:
+- Docker is installed and running on the host machine
+- The `PORT` environment variable is set (if not using default 8080)
+- CORS is configured for your frontend domain
+
+**Example deployment on a VPS:**
+```bash
+# Install dependencies
+cd backend
+npm install --production
+
+# Start with PM2 (recommended)
+pm2 start server.js --name ai-coding-backend
+
+# Or use a process manager of your choice
+```
+
+---
+
+## 🎯 Usage Guide
+
+### 1. Writing Code
+- Select your language from the dropdown menu
+- Start typing in the Monaco editor
+- Use file upload to import existing code
+
+### 2. Running Code
+- Click the **Run** button in the toolbar
+- Provide custom input if needed (in the AI panel)
+- View results in the output panel
+
+### 3. Using AI Assistant
+- Click the **Gemini** icon to open the chat
+- Ask questions about your code, debugging help, or algorithm explanations
+- Use "Problem Statement" for specific coding challenges
+- Click code blocks to copy or insert them into the editor
+
+### 4. File Operations
+- **Upload**: Click the folder icon and select a `.py`, `.cpp`, `.java`, or `.js` file
+- **Download**: Click the download icon to save your current code
+
+---
+
+## 🔧 Configuration
+
+### Language Configuration
+
+Languages are defined in `frontend/src/constants/languages.js`:
+
+```javascript
+export const LANGUAGES = [
   {
-    "code": "string (required)",
-    "language": "javascript | python | java | c++ (required)",
-    "input": "string (optional, passed to stdin)"
-  }
-- Responses:
-  - 200: text/plain stdout from the execution.
-  - 400: text/plain stderr or error string (e.g., Unsupported language, Java class missing, compile errors).
+    name: "Python",
+    monacoId: "python",
+    version: "3.x",
+    fileExtension: ".py"
+  },
+  // ... more languages
+];
+```
 
-Configuration Notes
-- Supported languages and file extensions are defined in src/constants/languages.js.
-- Uploading files uses the file extension to select the language; unsupported extensions are rejected in the UI.
-- Java support requires a class to be present; if the class is public, its name is used for compilation and execution.
-- The backend mounts its working directory into the Docker container (read/write). Ensure the backend user has appropriate permissions.
+### Editor Customization
 
-Troubleshooting
-- Docker not found or not running
-  - Ensure Docker Desktop/Engine is installed and running; the backend relies on the docker CLI.
-- C++/Java/Python/Javascript program not running
-  - Check that the selected language matches your code.
-  - For Java, ensure your code contains a class (public class if possible) and the class name matches file/class requirements.
-- 400 errors from /run
-  - Compile/runtime errors in your code are returned as stderr; review the output panel for details.
-- AI responses not working
-  - Ensure VITE_GEMINI_API_KEY is set in frontend/.env and restart the dev server.
-  - Network blocks to Google APIs may cause failures.
-- Upload is not changing language
-  - Ensure the file extension is one of: .py, .cpp, .java, .js
-- Copy/Move-to-editor actions from AI response don’t work
-  - Verify the language label in code block is a supported language name (as defined in languages.js). Otherwise, the move-to-editor action will log an unsupported language error.
+Modify editor options in `frontend/src/components/Code.jsx`:
 
-License
-- ISC License (as declared in package.json files).
+```javascript
+<Editor
+  theme="vs-dark"
+  language={selectedLanguage}
+  options={{
+    wordWrap: "on",
+    smoothScrolling: true,
+    fontSize: 14,
+    minimap: { enabled: true },
+    // Add more options here
+  }}
+/>
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+#### ❌ **Docker not found**
+**Problem:** Backend can't find Docker
+**Solution:** 
+- Ensure Docker Desktop is installed and running
+- Verify Docker is in your system PATH: `docker --version`
+
+#### ❌ **Code execution fails**
+**Problem:** Getting 400 errors when running code
+**Solution:**
+- Check that your code is syntactically correct
+- For Java, ensure you have a `public class` matching the filename
+- Review the error message in the output panel
+
+#### ❌ **AI responses not working**
+**Problem:** Gemini chat is not responding
+**Solution:**
+- Verify `VITE_GEMINI_API_KEY` is set in `frontend/.env`
+- Restart the Vite dev server after adding the env variable
+- Check your API key is valid and has quota remaining
+- Ensure no network firewalls are blocking Google AI APIs
+
+#### ❌ **File upload not working**
+**Problem:** Uploaded file doesn't change the language
+**Solution:**
+- Ensure file has a supported extension (`.py`, `.cpp`, `.java`, `.js`)
+- Check browser console for any error messages
+
+#### ❌ **Port already in use**
+**Problem:** `EADDRINUSE` error when starting servers
+**Solution:**
+- Backend: Change port with `PORT=3000 npm start`
+- Frontend: Vite will auto-increment to 5174 if 5173 is taken
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how you can help:
+
+1. **Fork the repository**
+2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
+3. **Commit your changes** (`git commit -m 'Add amazing feature'`)
+4. **Push to the branch** (`git push origin feature/amazing-feature`)
+5. **Open a Pull Request**
+
+### Development Guidelines
+- Follow the existing code style
+- Add comments for complex logic
+- Test your changes thoroughly
+- Update documentation as needed
+
+---
+
+## 🗺️ Roadmap
+
+Check out our [Future Plans](frontend/FUTURE_PLANS.md) for upcoming features including:
+
+- 🔄 Real-time collaboration
+- 📱 Native mobile apps
+- 🎨 Custom themes and layouts
+- 🧪 Built-in testing framework
+- 📊 Code analytics and insights
+- 🔌 More language support (Rust, Go, TypeScript)
+
+---
+
+## 📄 License
+
+This project is licensed under the **ISC License**.
+
+---
+
+## 🙏 Acknowledgments
+
+- **Monaco Editor** - The editor that powers VS Code
+- **Google Gemini AI** - Advanced AI assistance
+- **React Team** - Amazing UI framework
+- **Vite** - Lightning-fast build tool
+- **Docker** - Secure code execution
+- **Tailwind CSS** - Beautiful styling made easy
+
+---
+
+## 📞 Support
+
+Having issues? Need help?
+
+- 📫 Open an issue on [GitHub Issues](https://github.com/LuckyBoy587/AI-Coding-Platform/issues)
+- 💬 Start a discussion in [GitHub Discussions](https://github.com/LuckyBoy587/AI-Coding-Platform/discussions)
+- ⭐ Star this repo if you find it useful!
+
+---
+
+<div align="center">
+
+**Made with ❤️ for developers who love to code**
+
+[⬆ Back to Top](#-ai-coding-platform)
+
+</div>
