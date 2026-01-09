@@ -22,7 +22,7 @@ const LeetcodePOD = () => {
   return (<div
       onClick={handleLeetcodeClick}
       className={"flex justify-center items-center p-2"}>
-      <img src={"/leetcode.png"} alt={"Leetcode"}
+      <img src={"leetcode.png"} alt={"Leetcode"}
            className="w-6 h-6 transition-all duration-200 group-hover:scale-110"/>
     </div>)
 }
